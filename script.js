@@ -156,18 +156,17 @@ function collision(direction){
   this.output= (loc1===true||loc2===true)
 }
 function phisics(){
+  let canWallJump = false;
   Ycollisions = new collision(Math.sign(player.Yspeed))
   yHit = Ycollisions.output;
 
   if(yHit){
     player.yspeed = 0;
   }
+  
   Xcollisions = new collision(Math.sign(player.Xspeed)+3)
   xHit = Xcollisions.output;
   if(xHit){
-    if(Ycollisions.direction>0){
-      if(wallJump)jumpCount++;
-    }
     player.Xspeed = 0;
     if(Xcollisions.direction<3){
       player.x = Math.floor(player.x)
@@ -175,9 +174,12 @@ function phisics(){
       player.x = Math.ceil(player.x)
     }
   }
+  
   Ycollisions = new collision(Math.sign(player.Yspeed))
   yHit = Ycollisions.output;
+  if(xHit)canWallJump = true;
   if(yHit){
+    canWallJump = false;
     if(Ycollisions.direction>0){
       player.y = Math.floor(player.y)
     }else{
@@ -187,6 +189,7 @@ function phisics(){
     }
     player.Yspeed=0
   }
+
   Xcollisions = new collision(Math.sign(player.Xspeed)+3)
   xHit = Xcollisions.output;
   Ycollisions = new collision(Math.sign(player.Yspeed))
@@ -207,8 +210,21 @@ function phisics(){
     player.Xspeed*=slowDown[1];
   }
   if(Math.abs(player.Xspeed)<.01)player.Xspeed = 0;
+  if(canWallJump){
+    if(wallJump)jumpCount = 1;
+  }
+  if(canWallJump){
+    div2.style.backgroundColor = "cyan"
+  }else{
+    div2.style.backgroundColor = "white"
+  }
 }
 function update(){
+  if(jumpCount>0){
+    div1.style.backgroundColor = "green"
+  }else{
+    div1.style.backgroundColor = "red"
+  }
   movement();
   clear(player);
   phisics();
