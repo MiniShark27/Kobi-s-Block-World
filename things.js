@@ -38,3 +38,46 @@ class Door{
     this.type="door"
   }
 }
+
+class Checkpoint{
+  constructor(x,y){
+    this.x=x;
+    this.y=y;
+    this.color="lime";
+    this.type="checkPoint"
+  }
+  getCoords(){
+    return [this.x,this.y];
+  }
+  setCoords(mat){
+    this.x = mat[0];
+    this.y = mat[1];
+  }
+}
+
+class keyDoor{
+  constructor(x,y){
+    this.x=x;
+    this.y=y;
+    this.color="gray";
+    this.type="keyDoor"
+  }
+}
+
+class key{
+  constructor(x,y){
+    this.x=x;
+    this.y=y;
+    this.color="yellow";
+    this.type="key"
+  }
+}
+
+class fakeWall{
+  constructor(x,y){
+    this.x=x;
+    this.y=y;
+    this.color="lightblue";
+    this.type="fakeWall"
+  }
+}

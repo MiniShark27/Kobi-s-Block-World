@@ -7,7 +7,7 @@ const ctx = c.getContext("2d");
 let cellSize = 20;
 
 let currentLevel = [];
-let levelNum = 0;
+let levelNum = 1;
 
 //width,height in cells
 let dimensions = null;
@@ -39,6 +39,10 @@ let playerAlive = true;
 const div1 = document.getElementById("div1");
 const div2 = document.getElementById("div2");
 
+let spawnCoords = [];
+let hasKey = false;
+
+
 //Get Keystrokes{
 document.addEventListener("keydown", function(event) {
   if(event.which==80){//P
@@ -60,7 +64,7 @@ document.addEventListener("keydown", function(event) {
 var map = [];
 onkeydown = onkeyup = function(e){
     map[e.keyCode] = e.type == 'keydown';
-}
+};
 function movement(){
   if(map[37])left();//left
   if(map[39])right();//right
@@ -135,9 +139,15 @@ function collision(direction){
     if(loc1.type === "obsticle"){
       if(loc1.deadly)playerAlive = false;
       loc1 = true;
-    }
-    if(loc1.type === "door"){
+    }else if(loc1.type === "door"){
       nextLV();
+    }else if(loc1.type === "checkPoint"){
+      checkpoint(loc1);
+    }else if(loc1.type === "key"){
+      clear(loc1);
+      hasKey=true;
+    }else if(loc1.type === "keyDoor"&&!hasKey){
+      loc1 = true;
     }
   }else{
     loc1=false
@@ -146,9 +156,15 @@ function collision(direction){
     if(loc2.type === "obsticle"){
       if(loc2.deadly)playerAlive = false;
       loc2 = true;
-    }
-    if(loc2.type === "door"){
+    }else if(loc2.type === "door"){
       nextLV();
+    }else if(loc2.type === "checkPoint"){
+      checkpoint(loc2);
+    }else if(loc2.type === "key"){
+      clear(loc2);
+      hasKey=true;
+    }else if(loc2.type === "keyDoor"&&!hasKey){
+      loc2 = true;
     }
   }else{
     loc2=false
@@ -243,6 +259,7 @@ function nextLV(){
 }
 function getLevel(){
   //j is x and i is y
+  hasKey = false;
   currentLevel = [];
   levelNum%=levels.length
   levelNum++;
@@ -251,14 +268,22 @@ function getLevel(){
     currentLevel.push([]);
     for(j=0;j<levelData[0][0].length;j++){
       if(levelData[0][i][j] === 0)currentLevel[i].push(null);
-      if(levelData[0][i][j] === 1)currentLevel[i].push(new Player(j,i));
+      if(levelData[0][i][j] === 1){
+        currentLevel[i].push(new Player(j,i));
+        spawnCoords = [j,i]
+      }
       if(levelData[0][i][j] === 2)currentLevel[i].push(new Wall(j,i));
       if(levelData[0][i][j] === 3)currentLevel[i].push(new Lava(j,i));
       if(levelData[0][i][j] === 4)currentLevel[i].push(new Door(j,i));
+      if(levelData[0][i][j] === 5)currentLevel[i].push(new Checkpoint(j,i));
+      if(levelData[0][i][j] === 6)currentLevel[i].push(new keyDoor(j,i));
+      if(levelData[0][i][j] === 7)currentLevel[i].push(new key(j,i));
+      if(levelData[0][i][j] === 8)currentLevel[i].push(new fakeWall(j,i));
     }
   }
 }
 function setup(){
+  jumpCount = 0;
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
   cellSize = levelData[1]
   dimensions = [currentLevel[0].length,currentLevel.length];
@@ -277,13 +302,26 @@ function setup(){
           player.y = i;
           player.xSpeed = 0;
           player.ySpeed = 0;
+        }else if(hasKey&&currentLevel[i][j].type === "key"){
+          clear(currentLevel[i][j]);
         }
       }
     }
   }
 }
+function checkpoint(obj){
+  clear(obj)
+  oldCoords = spawnCoords;
+  spawnCoords = obj.getCoords();
+  placehold = currentLevel[oldCoords[1]][oldCoords[0]];
+  currentLevel[oldCoords[1]][oldCoords[0]] = currentLevel[spawnCoords[1]][spawnCoords[0]];
+  currentLevel[oldCoords[1]][oldCoords[0]].setCoords(oldCoords);
+  currentLevel[spawnCoords[1]][spawnCoords[0]] = placehold;
+  draw(obj)
+}
 
 window.onload = function(){
+  levelNum--;
   getLevel();
   setup();
   window.setInterval(function(){
